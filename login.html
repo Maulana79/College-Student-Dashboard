@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - MyCampus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full border border-slate-200">
+        <div class="text-center mb-8">
+            <span class="text-4xl">🎓</span>
+            <h2 class="text-2xl font-bold text-slate-800 mt-2">Selamat Datang</h2>
+        </div>
+        
+        <div class="space-y-4">
+            <input type="text" id="loginNIM" placeholder="Masukkan NIM" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="loginPass" placeholder="Password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            
+            <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold transition">Masuk</button>
+        </div>
+
+        <p class="text-center mt-6 text-sm text-slate-600">
+            Belum punya akun? <a href="register.html" class="text-blue-600 font-bold hover:underline">Daftar Baru</a>
+        </p>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        requireGuest(); 
+
+        async function handleLogin() {
+            const nim = document.getElementById('loginNIM').value;
+            const password = document.getElementById('loginPass').value;
+
+            const { error } = await db.auth.signInWithPassword({
+                email: nim + CAMPUS_DOMAIN,
+                password: password
+            });
+
+            if (error) alert("Login Gagal: NIM atau Password salah.");
+            else window.location.href = 'index.html'; // Redirect ke Home
+        }
+    </script>
+</body>
+</html>

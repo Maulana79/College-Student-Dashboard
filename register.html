@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun Baru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border border-slate-200">
+        <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Pendaftaran Mahasiswa</h2>
+        
+        <div class="space-y-4">
+            <input type="text" id="regName" placeholder="Nama Lengkap" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="regNIM" placeholder="NIM" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="regProdi" placeholder="Prodi (Cth: Informatika)" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                <input type="number" id="regYear" placeholder="Angkatan (Cth: 2024)" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <input type="password" id="regPass" placeholder="Password" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+            
+            <button onclick="handleRegister()" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold transition">Daftar Sekarang</button>
+        </div>
+
+        <p class="text-center mt-4 text-sm text-slate-600">
+            Sudah punya akun? <a href="login.html" class="text-blue-600 font-bold hover:underline">Login di sini</a>
+        </p>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        requireGuest(); // Cek jika sudah login, lempar ke home
+
+        async function handleRegister() {
+            const name = document.getElementById('regName').value;
+            const nim = document.getElementById('regNIM').value;
+            const prodi = document.getElementById('regProdi').value;
+            const year = document.getElementById('regYear').value;
+            const password = document.getElementById('regPass').value;
+
+            if (!name || !nim || !prodi || !year || !password) return alert("Semua data wajib diisi!");
+
+            // 1. Daftar ke Supabase Auth
+            const { data: authData, error: authError } = await db.auth.signUp({
+                email: nim + CAMPUS_DOMAIN,
+                password: password
+            });
+
+            if (authError) return alert("Gagal Daftar: " + authError.message);
+
+            // 2. Simpan Biodata ke tabel 'profiles'
+            const { error: profileError } = await db.from('profiles').insert([{
+                id: authData.user.id, // ID ini menghubungkan Auth dan Profile
+                nim: nim,
+                full_name: name,
+                prodi: prodi,
+                year: parseInt(year)
+            }]);
+
+            if (profileError) {
+                alert("Akun dibuat tapi gagal simpan profil: " + profileError.message);
+            } else {
+                alert("Pendaftaran Berhasil! Silakan Login.");
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>

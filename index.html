@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mahasiswa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800 hidden" id="mainBody"> 
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center max-w-5xl">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-100 p-2 rounded-lg text-blue-600 font-bold text-xl">🎓</div>
+                <div>
+                    <h1 class="text-sm font-bold text-slate-800" id="navName">Memuat...</h1>
+                    <p class="text-xs text-slate-500"><span id="navProdi">...</span> • <span id="navYear">...</span></p>
+                </div>
+            </div>
+            <button onclick="handleLogout()" class="text-sm font-medium text-red-500 hover:text-red-700">Keluar</button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-6 max-w-5xl space-y-6">
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-500 uppercase font-bold">IPK Saat Ini</p>
+                <h2 class="text-3xl font-extrabold text-slate-800 mt-1" id="displayIPK">0.00</h2>
+            </div>
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                <p class="text-xs text-slate-500 uppercase font-bold">SKS Total</p>
+                <h2 class="text-3xl font-extrabold text-slate-800 mt-1" id="displaySKS">0</h2>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <canvas id="ipsChart" class="max-h-64"></canvas>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg">Input Kartu Hasil Studi</h3>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase">Smt:</span>
+                    <input type="number" id="globalSemester" class="w-16 p-1 border rounded text-center font-bold bg-slate-50" placeholder="1">
+                </div>
+            </div>
+
+            <div id="inputContainer" class="space-y-3"></div>
+
+            <div class="mt-4 flex gap-2">
+                <button onclick="addNewRow()" class="px-4 py-2 bg-slate-100 rounded hover:bg-slate-200 text-sm font-bold text-slate-600">+ Tambah</button>
+                <button id="btnSave" onclick="saveGrade()" class="flex-1 px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 text-sm font-bold text-white">Simpan Semua</button>
+                <button id="btnCancel" onclick="cancelEdit()" class="hidden px-4 py-2 bg-slate-400 rounded hover:bg-slate-500 text-sm font-bold text-white">Batal</button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 border-b">
+                    <tr>
+                        <th class="p-4 w-12 text-center">Smt</th>
+                        <th class="p-4">Matakuliah</th>
+                        <th class="p-4 w-12 text-center">SKS</th>
+                        <th class="p-4 w-16 text-center">Nilai</th>
+                        <th class="p-4 w-20 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="gradeTableBody"></tbody>
+            </table>
+            <div id="emptyState" class="hidden p-8 text-center text-slate-400">Belum ada data nilai.</div>
+        </div>
+
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script> <script>
+        let currentUser = null;
+
+        // Inisialisasi Halaman
+        async function initPage() {
+            // 1. Cek Login (dari config.js)
+            const session = await requireAuth();
+            currentUser = session.user;
+
+            // 2. Ambil Profil Mahasiswa
+            const { data: profile, error } = await db
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('navName').innerText = profile.full_name;
+                document.getElementById('navProdi').innerText = profile.prodi;
+                document.getElementById('navYear').innerText = `Angkatan ${profile.year}`;
+            }
+
+            // 3. Tampilkan Body
+            document.getElementById('mainBody').classList.remove('hidden');
+
+            // 4. Load Data Nilai & Siapkan Form (Fungsi ada di script.js)
+            fetchGrades(); 
+            addNewRow();
+        }
+
+        async function handleLogout() {
+            await db.auth.signOut();
+            window.location.href = 'login.html';
+        }
+
+        initPage();
+    </script>
+</body>
+</html>
