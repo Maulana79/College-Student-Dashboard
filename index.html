@@ -76,16 +76,15 @@
     </div>
 
     <script src="config.js"></script>
-    <script src="script.js"></script> <script>
+    <script src="script.js"></script> 
+    <script>
         let currentUser = null;
 
         async function initPage() {
-            // 1. Cek Login (dari config.js)
             const session = await requireAuth();
             currentUser = session.user;
 
-            // 2. Ambil Profil Mahasiswa
-            const { data: profile, error } = await db
+            const { data: profile } = await db
                 .from('profiles')
                 .select('*')
                 .eq('id', currentUser.id)
@@ -97,10 +96,8 @@
                 document.getElementById('navYear').innerText = `Angkatan ${profile.year}`;
             }
 
-            // 3. Tampilkan Body
             document.getElementById('mainBody').classList.remove('hidden');
 
-            // 4. Load Data Nilai & Siapkan Form (Fungsi ada di script.js)
             fetchGrades(); 
             addNewRow();
         }
