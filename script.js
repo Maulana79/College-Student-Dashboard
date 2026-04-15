@@ -1,4 +1,4 @@
-// Variable Global
+// Variable Globall
 let globalGrades = [];
 let editingId = null;
 let myChart = null;
